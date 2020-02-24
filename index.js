@@ -40,6 +40,8 @@ class ServerlessTranslateTemplateURLsPlugin {
             'before:package:setupProviderConfiguration': this.beforePackageSetupProviderConfiguration.bind(this),
             'before:remove:remove': this.beforeRemoveRemove.bind(this),
             'before:translate:cfPackage': this.beforePackageCleanup.bind(this),
+            'before:offline:start': this.offlineStartInit.bind(this),
+            'before:offline:start:init': this.offlineStartInit.bind(this),
             'translate:cfPackage': this.beforePackageSetupProviderConfiguration.bind(this)
         };
     }
@@ -113,6 +115,38 @@ class ServerlessTranslateTemplateURLsPlugin {
         } catch (err) {
             if (!err.message.includes('\' does not exist')) {
                 throw err;
+            }
+        }
+    }
+
+    async offlineStartInit() {
+        this.serverless.cli.log(`serverless-translate-templateurls: fetching remote artifacts to mock resources offline.`);
+
+        if (
+            this.service &&
+            this.service.resources &&
+            this.service.resources.Resources
+        ) {
+            for (const r in this.service.resources.Resources) {
+                if (this.service.resources.Resources.hasOwnProperty(r)) {
+                    const resource = this.service.resources.Resources[r];
+
+                    if (resource.Properties && resource.Properties.TemplateURL) {
+                        if (resource.Properties.Parameters.QueueName) { // assume SQS queue is created by the remote stack
+                            this.serverless.cli.log(`serverless-translate-templateurls: mocking CloudFormation resource for SQS queue ${resource.Properties.Parameters.QueueName}`);
+                            // fake QueueName property so serverless-offline-sqs detects (and manages) the queue
+                            // https://github.com/CoorpAcademy/serverless-plugins/tree/master/packages/serverless-offline-sqs#functions
+                            resource.Properties.QueueName = resource.Properties.Parameters.QueueName;
+                        }
+
+                        if (resource.Properties.Parameters.BucketName) { // assume S3 bucket is created by the remote stack
+                            this.serverless.cli.log(`serverless-translate-templateurls: mocking CloudFormation resource for S3 bucket ${resource.Properties.Parameters.BucketName}`);
+                            // fake BucketName property so serverless-s3-local detects (and manages) the bucket
+                            // https://github.com/ar90n/serverless-s3-local/blob/master/index.js
+                            resource.Properties.BucketName = resource.Properties.Parameters.BucketName;
+                        }
+                    }
+                }
             }
         }
     }
