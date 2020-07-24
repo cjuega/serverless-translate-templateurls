@@ -336,14 +336,23 @@ class ServerlessTranslateTemplateURLsPlugin {
             `serverless-translate-templateurls: ${inpath} -> ${outpath}`
         );
 
-        let args = "";
+        let args = "",
+            profile = "";
 
         if (inpath.endsWith(".json")) {
             args += " --use-json";
         }
 
         if (this.serverless.service.provider.profile) {
-            args += ` --profile ${this.serverless.service.provider.profile}`;
+            profile = this.serverless.service.provider.profile;
+        }
+
+        if (this.options.awsProfile) {
+            profile = this.options.awsProfile;
+        }
+
+        if (profile) {
+            args += ` --profile ${profile}`;
         }
 
         await execAsync(
