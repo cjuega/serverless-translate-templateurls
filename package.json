@@ -1,6 +1,6 @@
 {
   "name": "serverless-translate-templateurls",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Serverless plugin to translate local templateURL paths to s3 paths using cloud formation package utility",
   "main": "index.js",
   "engines": {
