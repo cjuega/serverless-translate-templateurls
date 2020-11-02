@@ -4,8 +4,8 @@
   "description": "Serverless plugin to translate local templateURL paths to s3 paths using cloud formation package utility",
   "main": "index.js",
   "engines": {
-    "node": "^10.15.3",
-    "npm": "^6.10.1"
+    "node": ">=10.15.3",
+    "npm": ">=6.10.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
