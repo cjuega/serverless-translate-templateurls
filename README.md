@@ -87,5 +87,11 @@ Translate command performs the actual conversion. It's a convenient command to r
 serverless translate
 ```
 
+### Using an specific profile
+In case you want to use an specific profile to upload the templates, you can use the option awsProfile
+```sh
+serverless translate --awsProfile my-profile
+```
+
 ## License
 MIT
