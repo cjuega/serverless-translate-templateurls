@@ -8,6 +8,7 @@ const { readdir, unlink } = require("fs"),
     execAsync = require("util").promisify(exec),
     DEFAULT_IN_PATH = "cf-templates",
     DEFAULT_OUT_PATH = "resources",
+    SQS_DEAD_LETTER_PREFIX = "DL";
     S3_PREFIX = "serverless-translate-templateurls";
 
 /**
@@ -183,6 +184,33 @@ class ServerlessTranslateTemplateURLsPlugin {
                                 resource.Type = "AWS::SQS::Queue";
                                 resource.Properties.QueueName =
                                     resource.Properties.Parameters.QueueName;
+                            }
+
+
+                            // checks if SQS have Dead Letter Queue and creates other
+                            if(resource.Properties.Parameters.hasOwnProperty("MaxReceiveCount") 
+                                && resource.Properties.Parameters.MaxReceiveCount > 0) {
+                                const dlResourceName = SQS_DEAD_LETTER_PREFIX.concat(r),
+                                    dlQueueName = `${SQS_DEAD_LETTER_PREFIX.toLowerCase()}-${resource.Properties.Parameters.QueueName}`;
+                                this.serverless.cli.log(
+                                    `serverless-translate-templateurls: mocking CloudFormation resource for SQS DL queue ${dlQueueName}`
+                                );
+                                // TODO: @cjuega I think about to way to do this
+                                // 1ª way - clone the object exactly the same as the queue from which we want to generate a DeadLetter. 
+                                // With this we would maintain the "semantics" of the new resource that we are creating
+                                
+                                // let dlQueue = Object.assign(resource);
+                                // dlQueue.Type = "AWS::SQS::Queue";
+                                // dlQueue.Properties.QueueName = dlQueueName;
+                                // dlQueue.Properties.Parameters.QueueName = dlQueueName;
+
+                                // 2º way - only copy the params needed to SQS offline to works
+                                const dlQueue = Object.assign({},{
+                                    Type: "AWS::SQS::Queue",
+                                    QueueName: dlQueueName
+                                });
+                                
+                                this.service.resources.Resources[dlResourceName] = dlQueue;
                             }
                         }
                     }
