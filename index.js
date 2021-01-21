@@ -8,7 +8,7 @@ const { readdir, unlink } = require("fs"),
     execAsync = require("util").promisify(exec),
     DEFAULT_IN_PATH = "cf-templates",
     DEFAULT_OUT_PATH = "resources",
-    SQS_DEAD_LETTER_PREFIX = "DL";
+    SQS_DEAD_LETTER_PREFIX = "DL",
     S3_PREFIX = "serverless-translate-templateurls";
 
 /**
